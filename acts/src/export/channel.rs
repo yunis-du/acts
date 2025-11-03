@@ -1,4 +1,4 @@
-use crate::{Event, Message, scheduler::Runtime, utils};
+use crate::{Event, LogRecord, Message, scheduler::Runtime, utils};
 use std::sync::Arc;
 use tracing::{debug, error, info};
 
@@ -175,6 +175,21 @@ impl Channel {
         });
     }
 
+    pub fn on_log(
+        self: &Arc<Self>,
+        tid: &str,
+        f: impl Fn(&Event<LogRecord>) + Send + Sync + 'static,
+    ) {
+        let tid = tid.to_owned();
+        let runtime = self.runtime.clone();
+        self.runtime.emitter().on_log(move |e| {
+            if e.is_tid(&tid) {
+                store_log(&runtime, e);
+                f(e);
+            }
+        });
+    }
+
     pub fn close(&self) {
         self.runtime.emitter().remove(&self.chan_id);
     }
@@ -213,4 +228,19 @@ fn is_match(
         && (pat_tag.is_match(&e.tag) || pat_tag.is_match(&e.model.tag))
         && pat_key.is_match(&e.key)
         && pat_uses.is_match(&e.uses)
+}
+
+fn store_log(runtime: &Arc<Runtime>, log: &LogRecord) {
+    info!("store log: {log:?}");
+    let msg = log.into();
+    runtime
+        .cache()
+        .store()
+        .logs()
+        .create(&msg)
+        .unwrap_or_else(|err| {
+            error!("channel.store_if_emit_id: {}", err.to_string());
+            eprintln!("channel.store_if_emit_id: {}", err);
+            false
+        });
 }

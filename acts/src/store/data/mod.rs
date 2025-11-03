@@ -1,4 +1,5 @@
 mod event;
+mod log;
 mod message;
 mod model;
 mod package;
@@ -6,6 +7,7 @@ mod proc;
 mod task;
 
 pub use event::Event;
+pub use log::{LogLevel, LogRecord};
 pub use message::{Message, MessageStatus};
 pub use model::Model;
 pub use package::Package;

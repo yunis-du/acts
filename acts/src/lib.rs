@@ -29,7 +29,7 @@ pub use config::Config;
 pub use engine::Engine;
 pub use env::ActUserVar;
 pub use error::{ActError, Error};
-pub use event::{Action, Event, Message, MessageState};
+pub use event::{Action, Event, LogRecord, Message, MessageState};
 pub use export::{Channel, ChannelOptions, Executor, ExecutorQuery, Extender};
 pub use model::*;
 pub use package::{

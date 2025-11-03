@@ -1,6 +1,7 @@
 mod action;
 mod emitter;
 mod extra;
+mod log;
 mod message;
 
 #[cfg(test)]
@@ -10,6 +11,7 @@ use crate::{ActError, Result, scheduler::Runtime};
 pub use action::Action;
 pub use emitter::Emitter;
 pub use extra::TaskExtra;
+pub use log::LogRecord;
 pub use message::{Message, MessageState, Model};
 
 use serde::{Deserialize, Serialize};

@@ -89,6 +89,10 @@ impl Store {
         self.collection()
     }
 
+    pub fn logs(&self) -> Arc<dyn DbCollection<Item = data::LogRecord>> {
+        self.collection()
+    }
+
     pub fn publish(&self, pack: &Package) -> Result<bool> {
         trace!("store::publish({})", pack.id);
         if pack.id.is_empty() {
@@ -166,6 +170,7 @@ impl Store {
                     StoreIden::Tasks => Arc::new(DynDbSetRef(mem.tasks())),
                     StoreIden::Messages => Arc::new(DynDbSetRef(mem.messages())),
                     StoreIden::Events => Arc::new(DynDbSetRef(mem.events())),
+                    StoreIden::Logs => Arc::new(DynDbSetRef(mem.logs())),
                 });
         }
     }

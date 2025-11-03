@@ -1,6 +1,6 @@
 use crate::{
     Event, Result, ShareLock,
-    event::Message,
+    event::{LogRecord, Message},
     scheduler::{Process, Runtime, Task},
     utils,
 };
@@ -37,6 +37,7 @@ macro_rules! dispatch_key_event {
 }
 
 pub type ActWorkflowMessageHandle = Arc<dyn Fn(&Event<Message>) + Send + Sync>;
+pub type ActWorkflowLogHandle = Arc<dyn Fn(&Event<LogRecord>) + Send + Sync>;
 pub type ProcHandle = Arc<dyn Fn(&Event<Arc<Process>>) + Send + Sync>;
 pub type TaskHandle = Arc<dyn Fn(&Event<Arc<Task>, TaskExtra>) + Send + Sync>;
 pub type TickHandle = Arc<dyn Fn(&i64) + Send + Sync>;
@@ -47,6 +48,8 @@ pub struct Emitter {
 
     messages: ShareLock<HashMap<String, ActWorkflowMessageHandle>>,
     errors: ShareLock<HashMap<String, ActWorkflowMessageHandle>>,
+
+    logs: ShareLock<Vec<ActWorkflowLogHandle>>,
 
     procs: ShareLock<Vec<ProcHandle>>,
     tasks: ShareLock<Vec<TaskHandle>>,
@@ -75,6 +78,7 @@ impl Emitter {
             starts: Arc::new(RwLock::new(HashMap::new())),
             completes: Arc::new(RwLock::new(HashMap::new())),
             errors: Arc::new(RwLock::new(HashMap::new())),
+            logs: Arc::new(RwLock::new(Vec::new())),
             procs: Arc::new(RwLock::new(Vec::new())),
             tasks: Arc::new(RwLock::new(Vec::new())),
             ticks: Arc::new(RwLock::new(Vec::new())),
@@ -133,6 +137,11 @@ impl Emitter {
             .entry(key.to_string())
             .and_modify(|v| *v = f.clone())
             .or_insert(f);
+    }
+
+    /// emit log event for task
+    pub fn on_log(&self, f: impl Fn(&Event<LogRecord>) + Send + Sync + 'static) {
+        self.logs.write().unwrap().push(Arc::new(f));
     }
 
     pub fn on_proc(&self, f: impl Fn(&Event<Arc<Process>>) + Send + Sync + 'static) {
@@ -197,6 +206,12 @@ impl Emitter {
         debug!("emit_error: {:?}", state);
         let e = Event::new(&self.runtime.read().unwrap(), state);
         dispatch_key_event!(self, errors, &e);
+    }
+
+    pub fn emit_log(&self, record: &LogRecord) {
+        debug!("emit_log: {:?}", record);
+        let e = Event::new(&self.runtime.read().unwrap(), record);
+        dispatch_event!(self, logs, &e);
     }
 
     pub fn emit_tick(&self) {

@@ -36,6 +36,8 @@ pub enum StoreIden {
     Messages,
     #[strum(serialize = "events")]
     Events,
+    #[strum(serialize = "logs")]
+    Logs,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

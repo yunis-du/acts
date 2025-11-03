@@ -18,6 +18,7 @@ pub struct MemStore {
     packages: Arc<Collect<Package>>,
     messages: Arc<Collect<Message>>,
     events: Arc<Collect<Event>>,
+    logs: Arc<Collect<LogRecord>>,
 }
 
 trait DbDocument: Serialize + DeserializeOwned {
@@ -33,6 +34,7 @@ impl MemStore {
         let packages = Collect::new("packages");
         let messages = Collect::new("messages");
         let events = Collect::new("events");
+        let logs = Collect::new("logs");
 
         Self {
             models: Arc::new(models),
@@ -41,6 +43,7 @@ impl MemStore {
             packages: Arc::new(packages),
             messages: Arc::new(messages),
             events: Arc::new(events),
+            logs: Arc::new(logs),
         }
     }
 
@@ -66,5 +69,9 @@ impl MemStore {
 
     pub fn events(&self) -> Arc<dyn DbCollection<Item = data::Event> + Send + Sync> {
         self.events.clone()
+    }
+
+    pub fn logs(&self) -> Arc<dyn DbCollection<Item = data::LogRecord> + Send + Sync> {
+        self.logs.clone()
     }
 }
