@@ -2,7 +2,7 @@ use std::fmt;
 
 use serde::{Deserialize, Serialize};
 
-use crate::data;
+use crate::{data, utils::shortid};
 
 #[derive(Default, Debug, Copy, PartialEq, Clone)]
 pub enum LogLevel {
@@ -47,7 +47,6 @@ pub struct LogRecord {
 
 impl LogRecord {
     pub fn new<S: Into<String>>(
-        id: S,
         tid: S,
         pid: S,
         level: LogLevel,
@@ -55,7 +54,7 @@ impl LogRecord {
         timestamp: i64,
     ) -> Self {
         Self {
-            id: id.into(),
+            id: shortid(),
             tid: tid.into(),
             pid: pid.into(),
             level: level.to_string(),

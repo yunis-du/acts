@@ -1,5 +1,6 @@
 mod act_executor;
 mod event_executor;
+mod log_executor;
 mod message_executor;
 mod model_executor;
 mod package_executor;
@@ -30,6 +31,7 @@ pub struct Executor {
     task: task_executor::TaskExecutor,
     pack: package_executor::PackageExecutor,
     evt: event_executor::EventExecutor,
+    log: log_executor::LogExecutor,
 }
 
 impl ExecutorQuery {
@@ -88,6 +90,7 @@ impl Executor {
             task: task_executor::TaskExecutor::new(rt),
             pack: package_executor::PackageExecutor::new(rt),
             evt: event_executor::EventExecutor::new(rt),
+            log: log_executor::LogExecutor::new(rt),
         }
     }
 
@@ -125,5 +128,10 @@ impl Executor {
     /// executor for related event functions
     pub fn evt(&self) -> &event_executor::EventExecutor {
         &self.evt
+    }
+
+    /// executor for related log functions
+    pub fn log(&self) -> &log_executor::LogExecutor {
+        &self.log
     }
 }

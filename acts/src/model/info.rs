@@ -100,6 +100,16 @@ pub struct EventInfo {
     pub timestamp: i64,
 }
 
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct LogInfo {
+    pub id: String,
+    pub tid: String,
+    pub pid: String,
+    pub level: String,
+    pub content: String,
+    pub timestamp: i64,
+}
+
 impl From<&data::Package> for PackageInfo {
     fn from(m: &data::Package) -> Self {
         Self {
@@ -288,5 +298,24 @@ impl From<&data::Event> for EventInfo {
 impl From<EventInfo> for serde_json::Value {
     fn from(val: EventInfo) -> Self {
         serde_json::to_value(val).unwrap()
+    }
+}
+
+impl From<LogInfo> for serde_json::Value {
+    fn from(val: LogInfo) -> Self {
+        serde_json::to_value(val).unwrap()
+    }
+}
+
+impl From<&data::LogRecord> for LogInfo {
+    fn from(m: &data::LogRecord) -> Self {
+        Self {
+            id: m.id.clone(),
+            tid: m.tid.clone(),
+            pid: m.pid.clone(),
+            level: m.level.to_string(),
+            content: m.content.clone(),
+            timestamp: m.timestamp,
+        }
     }
 }
