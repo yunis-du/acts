@@ -3,7 +3,7 @@ use acts::{MessageState, Vars, data::*, query::*};
 use serde_json::json;
 
 async fn init() -> Database {
-    let db = Database::new("postgresql://root:root@172.20.1.26:5432/acts");
+    let db = Database::new("postgresql://root:root@172.20.1.26:5432/acts?options=-c%20search_path%3Dacts");
     db.init();
     db
 }
@@ -784,7 +784,7 @@ async fn store_log_create() {
 
         store.logs().create(&log).expect("create log");
 
-        tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
+        tokio::time::sleep(tokio::time::Duration::from_millis(1)).await;
     }
 
     tokio::time::sleep(tokio::time::Duration::from_secs(6)).await;

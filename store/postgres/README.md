@@ -4,15 +4,14 @@ The acts postgres plugin for acts.
 
 ## Installation
 
-create `config/acts.cfg` in current dir
+create `config/acts.toml` in current dir
 ```no_compile
-postgres {
-    database_url: "postgresql://<your connection string>"
-}
+[postgres]
+database_url = "postgresql://<your connection string>"
 ```
 
 ```bash,no_compile
-cargo add acts-store-postgres
+cargo add acts-store-postgres --git https://github.com/yunis-du/acts.git
 ```
 
 ## Example
