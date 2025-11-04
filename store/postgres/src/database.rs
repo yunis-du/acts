@@ -1,7 +1,7 @@
 use super::synclient::SynClient;
 use crate::collection::{
-    EventCollection, MessageCollection, ModelCollection, PackageCollection, ProcCollection,
-    TaskCollection,
+    EventCollection, LogCollection, MessageCollection, ModelCollection, PackageCollection,
+    ProcCollection, TaskCollection,
 };
 use acts::{DbCollection, data::*};
 use sqlx::{Error as DbError, postgres::PgRow};
@@ -25,6 +25,7 @@ pub struct Database {
     packages: Arc<PackageCollection>,
     messages: Arc<MessageCollection>,
     events: Arc<EventCollection>,
+    logs: Arc<LogCollection>,
 }
 
 impl Database {
@@ -36,6 +37,7 @@ impl Database {
         let packages = PackageCollection::new(&conn);
         let messages = MessageCollection::new(&conn);
         let events = EventCollection::new(&conn);
+        let logs = LogCollection::new(&conn);
 
         Self {
             models: Arc::new(models),
@@ -44,6 +46,7 @@ impl Database {
             packages: Arc::new(packages),
             messages: Arc::new(messages),
             events: Arc::new(events),
+            logs: Arc::new(logs),
         }
     }
 
@@ -71,6 +74,10 @@ impl Database {
         self.events.clone()
     }
 
+    pub fn logs(&self) -> Arc<dyn DbCollection<Item = LogRecord> + Send + Sync> {
+        self.logs.clone()
+    }
+
     pub fn init(&self) {
         self.packages.init();
         self.models.init();
@@ -78,5 +85,6 @@ impl Database {
         self.tasks.init();
         self.messages.init();
         self.events.init();
+        self.logs.init();
     }
 }

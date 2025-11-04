@@ -3,7 +3,7 @@ use acts::{MessageState, Vars, data::*, query::*};
 use serde_json::json;
 
 async fn init() -> Database {
-    let db = Database::new("postgresql://postgres:pass123@127.0.0.1:5432/postgres");
+    let db = Database::new("postgresql://root:root@172.20.1.26:5432/acts");
     db.init();
     db
 }
@@ -145,7 +145,7 @@ async fn store_proc_create() {
         end_time: 0,
         timestamp: utils::timestamp(),
         model: "".to_string(),
-        env_local: "{}".to_string(),
+        env: "{}".to_string(),
         err: None,
     };
     store.procs().create(&proc).unwrap();
@@ -165,7 +165,7 @@ async fn store_proc_find() {
         end_time: 0,
         timestamp: 0,
         model: "".to_string(),
-        env_local: "{}".to_string(),
+        env: "{}".to_string(),
         err: None,
     };
     store.procs().create(&proc).unwrap();
@@ -187,7 +187,7 @@ async fn store_proc_query() {
             end_time: 0,
             timestamp: 0,
             model: "".to_string(),
-            env_local: "{}".to_string(),
+            env: "{}".to_string(),
             err: None,
         };
         procs.create(&proc).unwrap();
@@ -216,7 +216,7 @@ async fn store_proc_update() {
         end_time: 0,
         timestamp: 0,
         model: "".to_string(),
-        env_local: "{}".to_string(),
+        env: "{}".to_string(),
         err: None,
     };
     store.procs().create(&proc).unwrap();
@@ -243,7 +243,7 @@ async fn store_proc_delete() {
         end_time: 0,
         timestamp: utils::timestamp(),
         model: "".to_string(),
-        env_local: "{}".to_string(),
+        env: "{}".to_string(),
         err: None,
     };
     store.procs().create(&proc).unwrap();
@@ -762,4 +762,30 @@ async fn store_event_remove() {
 
     let ret = store.events().find(&evt.id);
     assert!(ret.is_err());
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 10)]
+async fn store_log_create() {
+    let store = init().await;
+
+    for _ in 0..10000 {
+        let pid = utils::longid();
+        let tid = utils::shortid();
+
+        let id = format!("{pid}:{tid}");
+        let log: LogRecord = LogRecord {
+            id: id.clone(),
+            tid: tid.clone(),
+            pid: pid.clone(),
+            level: LogLevel::Info,
+            content: "log content".to_string(),
+            timestamp: utils::timestamp(),
+        };
+
+        store.logs().create(&log).expect("create log");
+
+        tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
+    }
+
+    tokio::time::sleep(tokio::time::Duration::from_secs(6)).await;
 }

@@ -7,8 +7,8 @@ mod collection;
 mod database;
 mod synclient;
 
-// #[cfg(test)]
-// mod tests;
+#[cfg(test)]
+mod tests;
 
 use acts::{ActError, ActPlugin, Result};
 
@@ -37,6 +37,7 @@ impl ActPlugin for PostgresStore {
         engine.extender().register_collection(db.tasks());
         engine.extender().register_collection(db.messages());
         engine.extender().register_collection(db.events());
+        engine.extender().register_collection(db.logs());
 
         Ok(())
     }

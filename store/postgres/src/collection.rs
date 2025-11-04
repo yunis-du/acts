@@ -1,4 +1,5 @@
 mod event;
+mod log;
 mod message;
 mod model;
 mod package;
@@ -8,6 +9,7 @@ mod task;
 use std::sync::Arc;
 
 pub use event::EventCollection;
+pub use log::LogCollection;
 pub use message::MessageCollection;
 pub use model::ModelCollection;
 pub use package::PackageCollection;
