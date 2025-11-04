@@ -24,6 +24,10 @@ pub struct ChannelOptions {
 
     /// use the glob pattern to match the message uses
     pub uses: String,
+
+    /// use the glob pattern to match the log task id
+    /// eg. tid1*
+    pub tid: String,
 }
 
 impl Default for ChannelOptions {
@@ -36,6 +40,7 @@ impl Default for ChannelOptions {
             tag: "*".to_string(),
             key: "*".to_string(),
             uses: "*".to_string(),
+            tid: "*".to_string(),
         }
     }
 }
@@ -54,6 +59,7 @@ pub struct Channel {
     chan_id: String,
     pattern: String,
     glob: (
+        globset::GlobMatcher,
         globset::GlobMatcher,
         globset::GlobMatcher,
         globset::GlobMatcher,
@@ -81,12 +87,13 @@ impl Channel {
         let pat_tag = globset::Glob::new(&options.tag).unwrap().compile_matcher();
         let pat_key = globset::Glob::new(&options.key).unwrap().compile_matcher();
         let pat_uses = globset::Glob::new(&options.uses).unwrap().compile_matcher();
+        let pat_tid = globset::Glob::new(&options.tid).unwrap().compile_matcher();
         Self {
             runtime: rt.clone(),
             ack: options.ack,
             chan_id: options.id.clone(),
             pattern: options.pattern(),
-            glob: (pat_type, pat_state, pat_tag, pat_key, pat_uses),
+            glob: (pat_type, pat_state, pat_tag, pat_key, pat_uses, pat_tid),
         }
     }
 
@@ -177,13 +184,12 @@ impl Channel {
 
     pub fn on_log(
         self: &Arc<Self>,
-        tid: &str,
         f: impl Fn(&Event<LogRecord>) + Send + Sync + 'static,
     ) {
-        let tid = tid.to_owned();
+        let glob = self.glob.clone();
         let runtime = self.runtime.clone();
         self.runtime.emitter().on_log(move |e| {
-            if e.is_tid(&tid) {
+            if is_match_tid(&glob.5, e) {
                 store_log(&runtime, e);
                 f(e);
             }
@@ -219,15 +225,20 @@ fn is_match(
         globset::GlobMatcher,
         globset::GlobMatcher,
         globset::GlobMatcher,
+        globset::GlobMatcher,
     ),
     e: &Event<Message>,
 ) -> bool {
-    let (pat_type, pat_state, pat_tag, pat_key, pat_uses) = glob;
+    let (pat_type, pat_state, pat_tag, pat_key, pat_uses, _pat_tid) = glob;
     pat_type.is_match(&e.r#type)
         && pat_state.is_match(e.state.as_ref())
         && (pat_tag.is_match(&e.tag) || pat_tag.is_match(&e.model.tag))
         && pat_key.is_match(&e.key)
         && pat_uses.is_match(&e.uses)
+}
+
+fn is_match_tid(glob: &globset::GlobMatcher, e: &Event<LogRecord>) -> bool {
+    glob.is_match(&e.tid)
 }
 
 fn store_log(runtime: &Arc<Runtime>, log: &LogRecord) {
