@@ -1,28 +1,6 @@
-use std::fmt;
-
 use serde::{Deserialize, Serialize};
 
 use crate::{data, utils::shortid};
-
-#[derive(Default, Debug, Copy, PartialEq, Clone)]
-pub enum LogLevel {
-    #[default]
-    Info,
-    Debug,
-    Warn,
-    Error,
-}
-
-impl fmt::Display for LogLevel {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(match self {
-            LogLevel::Info => "info",
-            LogLevel::Debug => "debug",
-            LogLevel::Warn => "warn",
-            LogLevel::Error => "error",
-        })
-    }
-}
 
 #[derive(Default, Serialize, Deserialize, Clone, Debug)]
 pub struct LogRecord {
@@ -46,18 +24,12 @@ pub struct LogRecord {
 }
 
 impl LogRecord {
-    pub fn new<S: Into<String>>(
-        tid: S,
-        pid: S,
-        level: LogLevel,
-        content: S,
-        timestamp: i64,
-    ) -> Self {
+    pub fn new<S: Into<String>>(tid: S, pid: S, level: S, content: S, timestamp: i64) -> Self {
         Self {
             id: shortid(),
             tid: tid.into(),
             pid: pid.into(),
-            level: level.to_string(),
+            level: level.into(),
             content: content.into(),
             timestamp,
         }
@@ -73,7 +45,7 @@ impl LogRecord {
             id: value.id,
             tid: value.tid,
             pid: value.pid,
-            level: value.level.to_string().into(),
+            level: value.level.into(),
             content: value.content,
             timestamp: value.timestamp,
         }
