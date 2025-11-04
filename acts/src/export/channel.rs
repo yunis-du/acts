@@ -182,10 +182,7 @@ impl Channel {
         });
     }
 
-    pub fn on_log(
-        self: &Arc<Self>,
-        f: impl Fn(&Event<LogRecord>) + Send + Sync + 'static,
-    ) {
+    pub fn on_log(self: &Arc<Self>, f: impl Fn(&Event<LogRecord>) + Send + Sync + 'static) {
         let glob = self.glob.clone();
         let runtime = self.runtime.clone();
         self.runtime.emitter().on_log(move |e| {
