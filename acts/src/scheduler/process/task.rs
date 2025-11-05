@@ -421,7 +421,7 @@ impl Task {
                 self.next(ctx)?;
             }
             EventAction::Next => {
-                if self.state().is_completed() {
+                if !self.is_kind(NodeKind::Act) && self.state().is_completed() {
                     return Err(ActError::Action(format!(
                         "task '{}:{}' is already completed",
                         self.pid, self.id
